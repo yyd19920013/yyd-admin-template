@@ -1,0 +1,33 @@
+@charset"utf-8";
+/* CSS Document */
+
+/*sass定义*/
+/*计算单位函数*/
+@function unit($num) {
+    $scale: 1; //缩放比例
+
+    @return #{if($num == 1, 1, $num * $scale)}px;
+}
+
+/*公共变量*/
+$main: #409EFF; //主色
+$bg: #f2f2f2; //背景色
+$orangeBg: #ffe4dd; //橙色背景
+$orange: #ff7955; //橙色
+$gray: #ccc; //灰色
+$lightBlue: #e5f5ff; //浅蓝色
+$padding: 15px; //边距
+$height1: 44px; //常用高度1
+$border1: 1px solid #e4e4e4; //常用边框1
+$border2: 1px solid #bbbcc6; //常用边框2，头像边框
+
+/*公共样式*/
+/*头像样式*/
+@mixin portrait($path) {
+    width: 60px;
+    height: 60px;
+    border: $border1;
+    border-radius: 50%;
+    background: url($path + 'images/portrait.png') no-repeat center center;
+    background-size: cover;
+}
