@@ -11,7 +11,7 @@ module.exports = {
   },
   extends: [
     'plugin:vue/recommended',
-    // 'eslint:recommended'
+    'eslint:recommended'
   ],
 
   // add your custom rules here
