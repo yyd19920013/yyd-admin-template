@@ -42,10 +42,6 @@ export default {
 @import '~styles/public.scss';
 
 .home {
-    .text {
-        display: flex;
-        border-top: 1px solid #ddd;
-        border-bottom: 2px solid #ddd;
-    }
+
 }
 </style>
