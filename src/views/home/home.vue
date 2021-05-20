@@ -9,6 +9,10 @@
 </template>
 <script>
 export default {
+    components: {
+
+    },
+
     data() {
         return {
 
@@ -32,16 +36,12 @@ export default {
             console.log(res);
         },
     },
-
-    components: {
-
-    },
 }
+
 </script>
 <style lang="scss" scoped>
 @import '~styles/public.scss';
 
-.home {
+.home {}
 
-}
 </style>

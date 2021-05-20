@@ -5,6 +5,10 @@
 </template>
 <script>
 export default {
+    components: {
+
+    },
+
     data() {
         return {
             query: this.$route.query,
@@ -16,10 +20,6 @@ export default {
     },
 
     methods: {
-
-    },
-
-    components: {
 
     },
 }

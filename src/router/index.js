@@ -57,6 +57,27 @@ export const constantRoutes = [{
     },
 
     {
+        path: '/test',
+        component: Layout,
+        redirect: '/test/testTableWrap',
+        name: 'TestTableWrap',
+        meta: { title: '测试', icon: 'form' },
+        children: [{
+                path: 'testTableWrap',
+                name: 'TestTableWrap',
+                component: () => import('src/views/test/testTableWrap'),
+                meta: { title: '测试表格' }
+            },
+            {
+                path: 'moduleManagement',
+                name: 'ModuleManagement',
+                component: () => import('src/views/test/testFormWrap'),
+                meta: { title: '测试表单' }
+            },
+        ],
+    },
+
+    {
         path: '/platformManagement',
         component: Layout,
         redirect: '/platformManagement/tenantManagement',

@@ -1,5 +1,6 @@
 <template>
-    <div class="wrapName">
+    <div class="testFormWrap">
+        <router-view></router-view>
     </div>
 </template>
 <script>
@@ -10,15 +11,15 @@ export default {
         }
     },
 
-    /*
-
-    */
-
-    props: {
+    mounted() {
 
     },
 
     methods: {
+
+    },
+
+    components: {
 
     },
 }
@@ -27,6 +28,6 @@ export default {
 <style lang="scss" scoped>
 @import '~styles/public.scss';
 
-.wrapName {}
+.testFormWrap {}
 
 </style>
