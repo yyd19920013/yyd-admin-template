@@ -14,7 +14,12 @@ const name = defaultSettings.title || 'vue Admin Template' // page title
 // You can change the port by the following methods:
 // port = 9528 npm run dev OR npm run dev --port = 9528
 const port = process.env.port || process.env.npm_config_port || 9528 // dev port
+const CONFIG_JSON = require('./src/services/config.js');
+const ENV = process.env.__ENV;
+const target = CONFIG_JSON[ENV || 'develop'].baseUrl;
 
+console.log(`当前运行环境：${ENV}`);
+console.log(`当前代理地址：${target}`);
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
     /**
@@ -34,7 +39,7 @@ module.exports = {
         open: true,
         proxy: {
             '/api': { //这里最好有一个 /
-                target: 'http://yangyd.cn', // 服务器端接口地址
+                target, // 服务器端接口地址
                 //如果要代理 websockets，配置这个参数
                 ws: false,
                 // 如果是https接口，需要配置这个参数
@@ -141,5 +146,12 @@ module.exports = {
                     config.optimization.runtimeChunk('single')
                 }
             )
+
+        config
+            .plugin('define')
+            .tap(args => {
+                args[0].__ENV = JSON.stringify(process.env.__ENV);
+                return args;
+            });
     }
 }

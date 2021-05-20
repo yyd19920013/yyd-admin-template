@@ -4,15 +4,14 @@
   "description": "A vue admin template with Element UI & axios & iconfont & permission control & lint",
   "author": "Pan <panfree23@gmail.com>",
   "scripts": {
-    "dev": "vue-cli-service serve",
-    "start": "vue-cli-service serve",
-    "build:prod": "vue-cli-service build",
+    "serve": "npm run dev:develop",
+    "start": "npm run dev:develop",
+    "dev:develop": "cross-env __ENV=develop vue-cli-service serve",
+    "dev:publish": "cross-env __ENV=publish vue-cli-service serve",
+    "build": "npm run build:develop",
+    "build:develop": "cross-env __ENV=develop vue-cli-service build",
+    "build:publish": "cross-env __ENV=publish vue-cli-service build",
     "build:stage": "vue-cli-service build --mode staging",
-    "build:develop": "vue-cli-service build",
-    "build:dev": "vue-cli-service build",
-    "build:master": "vue-cli-service build",
-    "build:publish": "vue-cli-service build",
-    "build:prepublish": "vue-cli-service build",
     "preview": "node build/index.js --preview",
     "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml",
     "lint": "eslint --ext .js,.vue src",
@@ -22,6 +21,7 @@
   "dependencies": {
     "axios": "0.18.1",
     "core-js": "3.6.5",
+    "cross-env": "^7.0.3",
     "element-ui": "2.13.2",
     "js-cookie": "2.2.0",
     "md5": "^2.2.1",
@@ -30,7 +30,8 @@
     "path-to-regexp": "2.4.0",
     "vue": "2.6.10",
     "vue-router": "3.0.6",
-    "vuex": "3.1.0"
+    "vuex": "3.1.0",
+    "yyd-decimal": "^9.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "4.4.4",

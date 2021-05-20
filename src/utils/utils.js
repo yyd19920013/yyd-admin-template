@@ -347,13 +347,14 @@ function axiosWrap(config) {
     changeRefresh(false);
 
     function createAxios(config) {
-        var url = (hostname == 'localhost' || hostname == '127.0.0.1' || hostname == '172.16.21.92') ? (config.url ? config.url : '/api') : '/';
+        var url = config.url;
         var method = config.method ? config.method.toLowerCase() : '';
         var paramsOrData = method == 'get' || method == 'delete' || config.urlJointParams ? 'params' : 'data';
+        var resultParams = !config.isForm ? config.params : jsonToStr(config.params);
         var configResult = {
             url: url,
             method: method,
-            [paramsOrData]: config.params,
+            [paramsOrData]: resultParams,
             headers: config.headers || {},
             timeout: config.timeout || 20000,
             responseType: config.responseType || 'json', //默认值是json，可选项 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
@@ -374,6 +375,14 @@ function axiosWrap(config) {
                     changeLoading(false);
                     config.finally && config.finally(data);
 
+                    if (config.responseType == 'blob') {
+                        if (resolve && (Type(resolve) == 'function')) {
+                            return resolve(data);
+                        } else {
+                            config.success && config.success(data);
+                        }
+                        return;
+                    }
                     if (data.code == config.code) {
                         if (resolve && (Type(resolve) == 'function')) {
                             return resolve(data);
@@ -383,9 +392,9 @@ function axiosWrap(config) {
                     } else {
                         if (!config.noHint) {
                             if (data.msg) {
-                                alerts(data.msg, null, 'warning');
+                                alerts(data.msg);
                             } else {
-                                alerts('请求代码错误', null, 'error');
+                                alerts('请求代码错误');
                             }
                         }
                         if (reject && (Type(reject) == 'function')) {
@@ -393,7 +402,7 @@ function axiosWrap(config) {
                         }
                     }
                 } else {
-                    alerts('网络异常' + res.status, null, 'error');
+                    alerts('网络异常' + res.status);
                     changeRefresh(true, res.status);
                     changeLoading(false);
                     if (reject && (Type(reject) == 'function')) {
@@ -406,7 +415,7 @@ function axiosWrap(config) {
                 console.log(error);
                 changeLoading(false);
                 if (error.response) {
-                    alerts('网络异常', null, 'error');
+                    alerts('网络异常');
                     changeRefresh(true, error.response.status);
                     if (reject && (Type(reject) == 'function')) {
                         return reject(error.response)
@@ -414,7 +423,7 @@ function axiosWrap(config) {
                         config.error && config.error(error.response);
                     }
                 } else if (error.code == 'ECONNABORTED') {
-                    alerts('请求超时', null, 'error');
+                    alerts('请求超时');
                     changeRefresh(true, '请求超时');
                     if (reject && (Type(reject) == 'function')) {
                         return reject(error);
@@ -434,7 +443,7 @@ function axiosWrap(config) {
                 axiosResultFn(resolve, reject);
             });
         }
-    }
+    };
 
     if (all && all.apis && all.apis.length > 0) {
         var apisArr = [];
@@ -1740,47 +1749,34 @@ var lStore = new Store().init('localStorage');
 //sessionStorage操作
 var sStore = new Store().init('sessionStorage');
 
-//返回当前地址?后面的参数的json格式(用于submit提交的str='1'&str1='2'格式)
+//返回键值对的json格式(用于a=1&b=2转换成{a:1,b:2})
+//str（要转换的字符串）
 function strToJson(str) {
-    var str = str || window.location.search;
-    var reg = /&+/g;
-    var reg1 = /=+/g;
-
-    try {
-        if (str.match(/.+=/)) {
-            str = decodeURI(str);
-            str = str.replace('?', '');
-            str = str.replace(reg, '","');
-            str = str.replace(reg1, '":"');
-            str = '{"' + str + '"}';
-            str = JSON.parse(str);
-        } else {
-            str = {};
-        }
-    } catch (e) {
-        str = {};
-    }
-    return str;
-}
-
-//传入json，转换成带?的表单格式的url地址
-//json(要转换的对象)
-//arr(要删除json的key的数组)
-//href(要定制的href)
-function jsonToStr(json, arr, href) {
-    var str = '';
-    var json = json || {};
-    var arr = arr || [];
-    var href = href || (window.location.origin + window.location.pathname);
+    var search = window && window.location && window.location.search.replace('?', '');
+    var str = str || search || '';
+    var arr = str.split('&');
+    var json = {};
 
     for (var i = 0; i < arr.length; i++) {
-        delete json[arr[i]];
+        var arr1 = arr[i].split('=');
+        var key = arr1[0];
+        var value = arr1[1];
+
+        json[key] = value;
     }
+    return json;
+}
+
+//返回json的键值对格式(用于{a:1,b:2}转换成a=1&b=2)
+//json（要转换的json）
+function jsonToStr(json) {
+    var json = json || {};
+    var arr = [];
+
     for (var attr in json) {
-        str += attr + '=' + json[attr] + '&';
+        arr.push(attr + '=' + json[attr]);
     }
-    str = href + '?' + str.substr(0, str.length - 1);
-    return str;
+    return arr.join('&');
 }
 
 //正则匹配获取search参数
@@ -1859,11 +1855,13 @@ function throttle(fn, msec) {
 //msec（提示框消失的时间，默认3秒）
 //noMask（是否去除遮罩）
 function alerts(str, msec, noMask) {
-    return vm.$message({
-        message: str,
-        type: noMask || 'info',
-        duration: msec || 3000,
-    });
+    if (!isPhone()) {
+        return vm.$ele.message({
+            message: str,
+            type: msec || 'warning',
+            duration: noMask || 3000,
+        });
+    }
     var oMask = document.createElement('div');
     var oWrap = document.createElement('div');
     var msec = msec || 3000;
@@ -2106,7 +2104,7 @@ function preload(arr, endFn) {
 
 //科学运算（解决js处理浮点不正确的问题）
 //num1（要进行运算的第一个数字）
-//operator（运算符号,+,-,*,/）
+//operator（运算符号,+、-、*、/）
 //num2（要进行运算的第二个数字）
 /*
     测试例子：
@@ -2399,6 +2397,29 @@ function imgFilesToBase64(files, endFn) {
     }
 }
 
+//根据后缀名判断文件类型
+function fileType(suffix) {
+    var suffix = suffix || '';
+    var typeList = ['image', 'audio', 'video', 'excel', 'file'];
+    var length = typeList.length - 1;
+    var suffixJson = {
+        image: ['png', 'jpg', 'jpeg', 'gif', 'ico', 'bmp', 'pic', 'tif'],
+        audio: ['mp3', 'ogg', 'wav', 'acc', 'vorbis', 'silk'],
+        video: ['mp4', 'webm', 'avi', 'rmvb', '3gp', 'flv', 'mov', 'rm'],
+        excel: ['xls', 'xlsx'],
+    };
+    var resultList = [];
+
+    for (var attr in suffixJson) {
+        resultList.push(!!~suffixJson[attr].indexOf(suffix));
+    }
+
+    var posIndex = resultList.indexOf(true);
+
+    return posIndex != -1 ? typeList[posIndex] : typeList[length];
+}
+
+
 //原生嵌入webview的刷新方法
 function webviewRefresh() {
     var rPath = '';
@@ -2543,254 +2564,6 @@ function controlBodyScroll(disableScroll, goTop) {
     }
 }
 
-//获取图片地址
-function getImgUrl() {
-    var dev = 'http://file.dev.aijk.net/file/upload/image/';
-    var test = 'http://file2.test.aijk.net/file/upload/image/';
-    var yOfficial = 'http://yimage.bshcn.com.cn/file/upload/image/';
-    var official = 'http://image.bshcn.com.cn/file/upload/image/';
-    var hostname = window.location.hostname;
-    var noNative = hostname != 'localhost' && hostname != '127.0.0.1' && hostname != '172.16.21.92';
-    var proxy = CONFIG.dev.proxyTable['/api'].target;
-    var url = '';
-
-    if (noNative) {
-        proxy = hostname;
-    }
-
-    if (proxy.indexOf('.dev.') != -1) {
-        url = dev;
-    } else if (proxy.indexOf('.test.') != -1) {
-        url = test;
-    } else if (proxy.indexOf('yih.') != -1) {
-        url = yOfficial;
-    } else {
-        url = official;
-    }
-    return url;
-}
-
-//原生和h5方法判断
-var nativeApi = {
-    changeStatusBarColor: function (index) { //改变原生状态栏主题颜色
-        var arr = ['light', 'dark'];
-        var index = index || 0;
-
-        window.location.href = 'js://statusbar?flag=' + arr[index];
-    },
-    tel: function (mobile) { //打电话兼容原生h5
-        if (lStore.get('app')) {
-            window.location.href = 'js://tel?number=' + mobile;
-        } else {
-            window.location.href = 'tel:' + mobile;
-        }
-    },
-    returnApp: function (parent) { //返回app
-        if (lStore.get('app')) {
-            window.location.href = 'js://closeView';
-        } else {
-            parent.$router.go(-1);
-        }
-    },
-    toLogin: function () { //返回登录页面
-        var href = encodeURIComponent(window.location.href);
-
-        if (lStore.get('app')) {
-            window.location.href = 'js://login?url=' + href;
-        } else {
-
-        }
-    },
-    tokenError: function () { //登录token失效
-        var href = encodeURIComponent(window.location.href);
-
-        if (lStore.get('app')) {
-            window.location.href = 'js://tokenError?url=' + href;
-        } else {
-
-        }
-    },
-    toPerfectInfo: function () { //去完善信息页面
-        if (lStore.get('app')) {
-            window.location.href = 'js://userInfoError';
-        } else {
-
-        }
-    },
-    toPay: function (parent, payType, body) { //支付
-        var body = encodeURIComponent(body);
-
-        if (lStore.get('app')) {
-            window.location.href = 'js://pay?type=' + payType + '&payinfo=' + body;
-        } else {
-
-        }
-    },
-    toOrderDetail: function (parent, orderDetailId, itemCode, conStatus, id, replace, goStep) { //订单详情
-        var codeJson = {
-            '01': 'picInquiry',
-            '02': 'videoInquiry',
-        };
-
-        function toH5Detail() {
-            parent.$router[replace ? 'replace' : 'push']({
-                path: '/user/myInquiry/myInquiryDetail',
-                query: {
-                    orderDetailId: orderDetailId,
-                },
-            });
-        }
-
-        if (lStore.get('app')) {
-            conStatus = +conStatus;
-            var arr = [11, 12, 15, 45];
-
-            if (conStatus && arr.indexOf(conStatus) != -1) {
-                toH5Detail();
-            } else {
-                window.location.href = 'js://' + codeJson[itemCode] + '?state=' + (conStatus || 52) + '&orderDetailId=' + orderDetailId;
-                if (id) {
-                    setTimeout(() => {
-                        parent.$router.go(goStep || -1);
-                    }, 1000);
-                }
-            }
-        } else {
-            toH5Detail();
-        }
-    },
-    toEvaluation: function (parent, orderDetailId) { //评价详情返回
-        if (lStore.get('app')) {
-            window.location.href = 'js://evaluate?orderDetailId=' + orderDetailId;
-        } else {
-            parent.$router.push({
-                path: '/user/myInquiry/myInquiryDetail',
-                query: {
-                    orderDetailId: orderDetailId,
-                },
-            });
-        }
-    },
-    toVisitDispensing: function (data) { //复诊配药
-        var data = JSON.stringify(data);
-
-        if (lStore.get('app')) {
-            window.location.href = 'js://subVisitInquiry?data=' + data;
-        } else {
-
-        }
-    },
-    toRevisitOrderList: function (orderStatus) { //跳转复诊订单列表
-        if (lStore.get('app')) {
-            var orderIndexJson = {
-                '11': '1',
-                '01': '2',
-                '02': '2',
-                '71': '3',
-                '05': '4',
-            };
-            var orderIndex = orderIndexJson[orderStatus] || 0;
-            var href = 'js://toRevisitOrderList?orderIndex=' + orderIndex;
-
-            //console.log(href);
-            window.location.href = href;
-        } else {
-
-        }
-    },
-    toDrugOrderList: function (orderStatus) { //跳转药品订单列表
-        if (lStore.get('app')) {
-            var orderIndexJson = {
-                '11': '1',
-                '21': '2',
-                '22': '3',
-                '05': '4',
-            };
-            var orderIndex = orderIndexJson[orderStatus] || 0;
-            var href = 'js://toDrugOrderList?orderIndex=' + orderIndex;
-
-            //console.log(href);
-            window.location.href = href;
-        } else {
-
-        }
-    },
-    addNewPersonSuccess: function () { //添加咨询人成功
-        if (lStore.get('app')) {
-            window.location.href = 'js://addNewPersonSuccess';
-        } else {
-
-        }
-    },
-    toRevisitDetail: function (data) { //跳转复诊配药详情
-        var data = JSON.stringify(data);
-
-        //console.log(data);
-        if (lStore.get('app')) {
-            window.location.href = 'js://toRevisitDetail?data=' + data;
-        } else {
-
-        }
-    },
-    toDrugPay: function (voucherNo) { //跳转药品支付
-        //console.log(voucherNo);
-        if (lStore.get('app')) {
-            window.location.href = 'js://toDrugPay?voucherNo=' + voucherNo;
-        } else {
-
-        }
-    },
-    initStatusTitle: function (json) { //初始化状态栏、标题栏
-        var json = JSON.stringify(json);
-
-        //console.log(json);
-        /*
-            初始化状态栏、标题栏
-            js-android：bsoftJsInterface.initStatusTitle("json");
-            json = {"title":"标题","titleBarShowState":1,"statusTitleBarMode":0,"statusTitleBarColor":"#354543","titleBtn":[{"id":3,"icon":"1","name":"name","nameColor":"#343434","showMode":1}]}
-
-            title（标题）
-            titleBarShowState （标题栏是否显示）：0 - 不显示；1 - 显示（默认）
-            statusTitleBarMode（状态栏、标题栏模式）：0 - 亮色（默认）；1 - 暗色
-            statusTitleBarColor（状态栏、标题栏颜色）默认主题色
-            titleBtn（标题栏自定义按钮）
-            id（按钮id）
-            icon（按钮图片）
-            name（按钮名称）
-            nameColor（按钮名称颜色）亮色模式默认白色；暗色模式默认黑色
-            showMode（显示模式）：0 - 显示name（默认）；1 - 显示icon
-        */
-        if (lStore.get('app')) {
-            if (window.bsoftJsInterface && window.bsoftJsInterface.initStatusTitle) {
-                window.bsoftJsInterface.initStatusTitle(json);
-            } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.initStatusTitle) {
-                window.webkit.messageHandlers.initStatusTitle.postMessage(json);
-            }
-        } else {
-
-        }
-    },
-    setTitleButton: function (json) { //初始化状态栏、标题栏
-        var json = JSON.stringify(json);
-
-        //console.log(json);
-        /*
-            重设标题栏按钮
-            js-android：bsoftJsInterface.setTitleButton("json");
-            json = [{"id":3,"icon":"1","name":"name","nameColor":"#343434","showMode":1}]
-        */
-        if (lStore.get('app')) {
-            if (window.bsoftJsInterface && window.bsoftJsInterface.setTitleButton) {
-                window.bsoftJsInterface.setTitleButton(json);
-            } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.setTitleButton) {
-                window.webkit.messageHandlers.setTitleButton.postMessage(json);
-            }
-        } else {
-
-        }
-    },
-};
-
 //项目中用到的工具函数
 export {
     //常用第三方插件
@@ -2860,13 +2633,10 @@ export {
     selectText,
     onPaste,
     imgFilesToBase64,
+    fileType,
     antiShake,
     throttle,
     webviewRefresh,
     hasPrevHistoryPageFn,
     controlBodyScroll,
-
-    //项目定制
-    getImgUrl,
-    nativeApi,
 };
