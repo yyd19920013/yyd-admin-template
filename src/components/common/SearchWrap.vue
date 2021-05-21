@@ -1,6 +1,5 @@
 <template>
-    <div class="SearchWrap
-">
+    <div class="SearchWrap">
         <el-form ref="form" :model="searchParams" label-width="90px">
             <el-form-item v-for="(item,index) in defineSearch" :key="index" :label="item.label" :label-width="item.width?item.width:'120px'">
                 <el-input v-model="searchParams[item.model]" v-bind="Object.assign({placeholder:'请输入',clearable:true},item.attrs||{})" v-on="item.methods||{}" v-if="item.type=='input'" />
