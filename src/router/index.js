@@ -52,7 +52,7 @@ export const constantRoutes = [{
             path: 'home',
             name: 'Home',
             component: () => import('src/views/home/home'),
-            meta: { title: '创业互联网医院', icon: 'dashboard' }
+            meta: { title: '后台管理模板', icon: 'dashboard' }
         }],
     },
 
@@ -73,27 +73,6 @@ export const constantRoutes = [{
                 name: 'ModuleManagement',
                 component: () => import('src/views/test/testFormWrap'),
                 meta: { title: '测试表单' }
-            },
-        ],
-    },
-
-    {
-        path: '/platformManagement',
-        component: Layout,
-        redirect: '/platformManagement/tenantManagement',
-        name: 'PlatformManagement',
-        meta: { title: '平台管理', icon: 'form' },
-        children: [{
-                path: 'tenantManagement',
-                name: 'TenantManagement',
-                component: () => import('src/views/tenantManagement/tenantManagement'),
-                meta: { title: '租户管理' }
-            },
-            {
-                path: 'moduleManagement',
-                name: 'ModuleManagement',
-                component: () => import('src/views/moduleManagement/moduleManagement'),
-                meta: { title: '模块管理' }
             },
         ],
     },
