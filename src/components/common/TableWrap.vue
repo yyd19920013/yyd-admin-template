@@ -19,6 +19,9 @@
                                 <el-switch v-model="scope.row[item.model]"></el-switch>
                                 <div class="switchMask" @click="item.click&&item.click({row:scope.row,index:scope.$index})"></div>
                             </div>
+                            <div class="preWrap" v-else-if="item.type=='pre'">
+                                <pre>{{scope.row[item.prop]}}</pre>
+                            </div>
                         </template>
                         <template v-else-if="item.custom">
                             {{item.custom({row:scope.row,index:scope.$index,filters:filters})}}
@@ -59,156 +62,30 @@ export default {
             type: Array,
             default () {
                 return [];
-                /*
-                    defineTable: [{ //表格定义
-                            label: '名字', //标签名字
-                            prop: 'name', //值的名字
-                            width: '100px', //宽度
-                        },
-                        {
-                            label: '时间',
-                            custom: ({ row, index, filters }) => { //自定义字段的值
-                                //console.log(row, index, filters);
-                                return filters.date(row.time, 'yyyy-mm-dd'); //使用filters的函数处理时间格式
-                            },
-                        },
-                        { //定义为按钮
-                            label: '按钮',
-                            type: 'button', //类型
-                            text: '按钮', //按钮文字
-                            click: ({ row, index }) => { //点击按钮回调
-                                console.log('点击了按钮', row, index);
-                                alert('点击了按钮');
-                            },
-                        },
-                        { //定义为开关
-                            label: '开关',
-                            type: 'switch', //类型
-                            model: 'isOpen', //开关绑定的数据
-                            click: ({ row, index }) => { //点击开关回调
-                                console.log('点击了开关', row, index);
-                                let tableData = JSON.parse(JSON.stringify(this.tableData));
-
-                                tableData[index].isOpen = !row.isOpen
-                                this.tableData = tableData;
-                            },
-                        },
-                        { //定义为操作列表
-                            label: '操作',
-                            handleList: [{
-                                    label: '按钮1',
-                                    type: 'button',
-                                    text: '按钮1',
-                                    click: ({ row, index }) => {
-                                        console.log('点击了按钮1', row, index);
-                                        alert('点击了按钮1');
-                                    },
-                                },
-                                {
-                                    label: '按钮2',
-                                    type: 'button',
-                                    text: '按钮2',
-                                    click: ({ row, index }) => {
-                                        console.log('点击了按钮2', row, index);
-                                        alert('点击了按钮2');
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                */
             },
         },
         tableData: { //表格数据
             type: Array,
             default () {
                 return [];
-                /*
-                    tableData: [{ //表格数据
-                        id: '1',
-                        name: '表格测试',
-                        time: '2021/5/21 11:15',
-                        isOpen: true,
-                    }],
-                */
             },
         },
         requestParams: { //请求接口参数
             type: Object,
             default () {
                 return null;
-                /*
-                    requestParams: { //请求参数
-                        pageNum: 1,
-                        pageSize: 10,
-                    },
-                */
             },
         },
         requestConfig: { //请求接口配置
             type: Object,
             default () {
                 return null;
-                /*
-                    requestConfig: { //请求配置
-                        request: (params) => { //请求接口（为mock数据，非真实接口）
-                            return new Promise((resolve, reject) => {
-                                setTimeout(() => {
-                                    let list = [];
-
-                                    for (let i = 0; i < params.pageSize; i++) {
-                                        let item = JSON.parse(JSON.stringify(this.tableData[0]));
-
-                                        item.name += params.pageNum;
-                                        list.push(item);
-                                    }
-                                    return resolve({
-                                        code: 0,
-                                        data: {
-                                            list,
-                                            pageInfo: {
-                                                total: 30,
-                                            },
-                                        },
-                                        message: '请求成功',
-                                    });
-                                }, 500);
-                            });
-                        },
-                        render: true, //是否开启渲染数据，不开启的话，在success函数里自行处理
-                        custom: (res) => { //是否自定义渲染数据，不自定义的话，默认渲染res.data.list
-                            console.log('返回数据', res);
-                            return res.data.list;
-                        },
-                        success: (res) => { //请求成功回调
-                            console.log('请求成功', res);
-                        },
-                        error: (res) => { //请求失败回调
-                            console.log('请求失败', res);
-                        },
-                    },
-                */
             },
         },
         pagingConfig: { //分页配置
             type: Object,
             default () {
                 return {};
-                /*
-                    pagingConfig: {
-                        pagingShow: true, //是否显示分页
-                        pageSizes: [10, 20, 50], //分页大小选择
-                        pageSize: 'pageSize', //分页大小的key，根据requestParams
-                        pageNum: 'pageNum', //分页页码的key，根据requestParams
-                        total(detail) { //总数
-                            console.log(detail);
-                            let { pageInfo = {} } = detail;
-                            let { total } = pageInfo;
-
-                            return total;
-                        },
-                    },
-                */
             },
         },
     },
@@ -262,11 +139,11 @@ export default {
         },
         getTableData(currenParams) {
             setTimeout(async () => {
-                let { request, render = true, custom, success, error } = this.requestConfig || {};
+                let { request, render = true, custom, success, fail } = this.requestConfig || {};
                 let { requestParams } = this;
                 if (!request || !requestParams) return;
                 let res = await request(requestParams);
-                if (!res.data) return error && error(res);
+                if (!res.data) return fail && fail(res);
 
                 if (render) {
                     let { list = [] } = res.data;
@@ -340,6 +217,14 @@ export default {
                 left: 0;
                 top: 0;
                 z-index: 10;
+            }
+        }
+        .preWrap {
+            width: 100%;
+            text-align: left;
+            overflow: auto;
+            pre {
+                width: 100%;
             }
         }
     }

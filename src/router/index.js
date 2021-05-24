@@ -77,6 +77,27 @@ export const constantRoutes = [{
         ],
     },
 
+    {
+        path: '/documents',
+        component: Layout,
+        redirect: '/documents/tableWrapDoc',
+        name: 'TestTableWrap',
+        meta: { title: '文档', icon: 'form' },
+        children: [{
+                path: 'tableWrapDoc',
+                name: 'TableWrapDoc',
+                component: () => import('src/views/documents/tableWrapDoc'),
+                meta: { title: '表格' }
+            },
+            {
+                path: 'searchWrapDoc',
+                name: 'SearchWrapDoc',
+                component: () => import('src/views/documents/searchWrapDoc'),
+                meta: { title: '表格搜索' }
+            },
+        ],
+    },
+
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
 ]

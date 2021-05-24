@@ -154,7 +154,7 @@ export default {
                     },
                 },
                 { //定义为日期范围选择器
-                    type: 'datePicker',
+                    type: 'dateRangePicker',
                     model: 'dateRangePicker',
                     label: '范围选择器：',
                     pickerOptions: {
@@ -202,6 +202,7 @@ export default {
             ],
             handlerConfig: { //操作配置
                 direction: 'auto',
+                column: 3,
                 handleList: [{
                         text: '搜索',
                         attrs: {
@@ -264,7 +265,7 @@ export default {
                         console.log('点击了开关', row, index);
                         let tableData = JSON.parse(JSON.stringify(this.tableData));
 
-                        tableData[index].isOpen = !row.isOpen
+                        tableData[index].isOpen = !row.isOpen;
                         this.tableData = tableData;
                     },
                 },
@@ -341,7 +342,7 @@ export default {
                 success: (res) => { //请求成功回调
                     console.log('请求成功', res);
                 },
-                error: (res) => { //请求失败回调
+                fail: (res) => { //请求失败回调
                     console.log('请求失败', res);
                 },
             },
@@ -352,7 +353,7 @@ export default {
                 // pageSizes: [10, 20, 50], //分页大小选择
                 // pageSize: 'pageSize', //分页大小的key，根据requestParams
                 // pageNum: 'pageNum', //分页页码的key，根据requestParams
-                // total(detail) { //总数
+                // total: (detail) => { //总数
                 //     console.log(detail);
                 //     let { pageInfo = {} } = detail;
                 //     let { total } = pageInfo;
