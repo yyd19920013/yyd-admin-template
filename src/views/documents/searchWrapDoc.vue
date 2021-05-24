@@ -537,7 +537,12 @@ export default {
                         requestParams: {
                             pageNum: 1,
                             pageSize: 10,
-                            docType: 'defineTable',
+                            input: '',
+                            select: '',
+                            cascader: '',
+                            timePicker: '',
+                            datePicker: '',
+                            dateRangePicker: '',
                         }
                    `,
             }],
