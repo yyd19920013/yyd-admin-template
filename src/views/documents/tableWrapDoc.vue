@@ -215,7 +215,7 @@ export default {
                     option: '-',
                     default: '-',
                     example: `
-                        [
+                        handleList: [
                             {
                                 label: '按钮1',
                                 type: 'button',
