@@ -660,7 +660,7 @@ export default {
                                 searchParams: searchParamsList,
                                 handlerConfig: handlerConfigList,
                             };
-                            let list = listJson[this.requestParams.docType];
+                            let list = listJson[this.requestParams.docType] || [];
                             let { pageSize, pageNum } = params;
                             let start = (pageNum - 1) * pageSize;
                             let end = start + pageSize;
