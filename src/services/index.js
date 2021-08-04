@@ -9,7 +9,7 @@ const context = require.context('./modules', true, /\.js$/);
 let modules = {};
 
 context.keys().forEach((item) => {
-    modules = Object.assign({}, modules, context(item));
+    Object.assign(modules, context(item));
 });
 const API = (config) => {
     config.url = URL + config.url;

@@ -5,9 +5,12 @@
         </div>
         <el-button type="primary" @click="confirm">弹出确定按钮</el-button>
         <el-button type="primary" @click="getList">请求接口数据</el-button>
+        <div>用户名称：{{userInfo.name}}</div>
     </div>
 </template>
 <script>
+import { mapState, mapMutations,mapActions } from 'vuex';
+
 export default {
     components: {
 
@@ -19,11 +22,22 @@ export default {
         }
     },
 
-    mounted() {
+    computed: {
+        ...mapState(['userInfo']),
+    },
 
+    mounted() {
+        this.UPDARA_USERINFO({
+            userInfo: { name: '新名字' },
+        });
+        this.ASYNC_UPDARA_USERINFO();
+        // this.TOGGLE_DEVICE('新设备名称');
     },
 
     methods: {
+        ...mapMutations(['UPDARA_USERINFO']),
+        ...mapActions(['ASYNC_UPDARA_USERINFO']),
+        ...mapMutations('app',['TOGGLE_DEVICE']),
         async confirm() {
             let res = await this.isConfirm('是否确定？');
             if (!res) return;
