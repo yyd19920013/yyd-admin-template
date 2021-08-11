@@ -15,14 +15,13 @@ context.keys().forEach((item) => {
     });
 });
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 const state = {
     isLoading: false, //遮罩是否显示loading
     showRefreshBt: false, //遮罩是否显示刷新按钮
     status: '', //服务器错误状态
-    userInfo: {}, //用户信息
-}
+};
 
 const store = new Vuex.Store({
     plugins: [createPersistedState({
@@ -43,6 +42,6 @@ const store = new Vuex.Store({
     getters,
     actions,
     mutations,
-})
+});
 
-export default store
+export default store;

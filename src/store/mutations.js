@@ -6,7 +6,4 @@ export default {
         state.showRefreshBt = payload.showRefreshBt;
         state.status = payload.status;
     },
-    UPDARA_USERINFO(state, { userInfo = {} }) { //更新用户信息
-        state.userInfo = userInfo;
-    },
-}
+};
