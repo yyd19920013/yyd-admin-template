@@ -25,7 +25,7 @@ const state = {
 
 // 非Module格式：xxxx
 // 使用了Module的格式：ModuleName.xxxx，这里持久化的是Theme Module下面的persistData数据
-const PERSIST_PATHS = ['isLoading']
+const PERSIST_PATHS = ['isLoading'];
 const store = new Vuex.Store({
     plugins: [
         createPersistedState({
@@ -38,6 +38,6 @@ const store = new Vuex.Store({
     getters,
     actions,
     mutations,
-})
+});
 
 export default store;
