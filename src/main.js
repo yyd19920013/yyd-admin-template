@@ -29,27 +29,6 @@ for (let attr in filters) {
 //挂载网络请求
 Vue.prototype.$services = services;
 
-//路由改变之前显示loading
-router.beforeEach((to, from, next) => {
-    store.commit({
-        type: 'UPDATE_LOADINGSTATUS',
-        isLoading: true,
-    });
-
-    //根据meta值改变title
-    if (to.meta && to.meta.title) document.title = to.meta.title;
-
-    next();
-});
-
-//路由改变之后隐藏loading
-router.afterEach(() => {
-    store.commit({
-        type: 'UPDATE_LOADINGSTATUS',
-        isLoading: false,
-    });
-});
-
 const vm = new Vue({
     el: '#app',
     router,
